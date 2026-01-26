@@ -96,32 +96,55 @@ defmodule Arbor.Contracts.Core.Session do
   """
   @spec new(keyword()) :: {:ok, t()} | {:error, term()}
   def new(attrs) do
-    now = DateTime.utc_now()
-
-    session = %__MODULE__{
-      id: attrs[:id] || Identifiers.generate_session_id(),
-      user_id: Keyword.fetch!(attrs, :user_id),
-      principal_id: Keyword.fetch!(attrs, :principal_id),
-      purpose: Keyword.fetch!(attrs, :purpose),
-      status: attrs[:status] || :initializing,
-      context: attrs[:context] || %{},
-      capabilities: attrs[:capabilities] || [],
-      agents: attrs[:agents] || %{},
-      max_agents: attrs[:max_agents] || 10,
-      agent_count: attrs[:agent_count] || 0,
-      created_at: attrs[:created_at] || now,
-      updated_at: attrs[:updated_at] || now,
-      expires_at: calculate_expiration(now, attrs[:timeout]),
-      terminated_at: attrs[:terminated_at],
-      timeout: attrs[:timeout],
-      cleanup_policy: attrs[:cleanup_policy] || :graceful,
-      metadata: attrs[:metadata] || %{}
-    }
+    session = build_session(attrs)
 
     case validate_session(session) do
       :ok -> {:ok, session}
       {:error, reason} -> {:error, reason}
     end
+  end
+
+  defp build_session(attrs) do
+    now = DateTime.utc_now()
+    defaults = session_defaults(now, attrs)
+    required = session_required_fields(attrs)
+    optional = session_optional_fields(attrs)
+
+    struct(__MODULE__, Map.merge(defaults, Map.merge(required, optional)))
+  end
+
+  defp session_defaults(now, attrs) do
+    %{
+      id: Keyword.get(attrs, :id, Identifiers.generate_session_id()),
+      status: Keyword.get(attrs, :status, :initializing),
+      context: Keyword.get(attrs, :context, %{}),
+      capabilities: Keyword.get(attrs, :capabilities, []),
+      agents: Keyword.get(attrs, :agents, %{}),
+      max_agents: Keyword.get(attrs, :max_agents, 10),
+      agent_count: Keyword.get(attrs, :agent_count, 0),
+      created_at: Keyword.get(attrs, :created_at, now),
+      updated_at: Keyword.get(attrs, :updated_at, now),
+      cleanup_policy: Keyword.get(attrs, :cleanup_policy, :graceful),
+      metadata: Keyword.get(attrs, :metadata, %{})
+    }
+  end
+
+  defp session_required_fields(attrs) do
+    %{
+      user_id: Keyword.fetch!(attrs, :user_id),
+      principal_id: Keyword.fetch!(attrs, :principal_id),
+      purpose: Keyword.fetch!(attrs, :purpose)
+    }
+  end
+
+  defp session_optional_fields(attrs) do
+    now = DateTime.utc_now()
+
+    %{
+      expires_at: calculate_expiration(now, attrs[:timeout]),
+      terminated_at: attrs[:terminated_at],
+      timeout: attrs[:timeout]
+    }
   end
 
   @doc """

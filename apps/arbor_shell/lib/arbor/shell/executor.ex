@@ -57,12 +57,10 @@ defmodule Arbor.Shell.Executor do
   """
   @spec kill_port(port()) :: :ok | {:error, term()}
   def kill_port(port) when is_port(port) do
-    try do
-      Port.close(port)
-      :ok
-    catch
-      :error, reason -> {:error, reason}
-    end
+    Port.close(port)
+    :ok
+  catch
+    :error, reason -> {:error, reason}
   end
 
   # Private functions
@@ -127,10 +125,8 @@ defmodule Arbor.Shell.Executor do
   end
 
   defp catch_port_close(port) do
-    try do
-      Port.close(port)
-    catch
-      :error, _ -> :ok
-    end
+    Port.close(port)
+  catch
+    :error, _ -> :ok
   end
 end

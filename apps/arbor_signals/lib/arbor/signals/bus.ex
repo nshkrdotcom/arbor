@@ -26,8 +26,8 @@ defmodule Arbor.Signals.Bus do
 
   use GenServer
 
-  alias Arbor.Signals.Signal
   alias Arbor.Identifiers
+  alias Arbor.Signals.Signal
 
   # Client API
 
@@ -159,8 +159,7 @@ defmodule Arbor.Signals.Bus do
     matching_subs =
       state.subscriptions
       |> Map.values()
-      |> Enum.filter(&matches_pattern?(&1.pattern, signal))
-      |> Enum.filter(&passes_filter?(&1.filter, signal))
+      |> Enum.filter(&(matches_pattern?(&1.pattern, signal) and passes_filter?(&1.filter, signal)))
 
     stats = Map.update!(state.stats, :total_published, &(&1 + 1))
 
@@ -181,23 +180,24 @@ defmodule Arbor.Signals.Bus do
   end
 
   defp deliver_signal(signal, %{async: true, handler: handler}) do
-    Task.start(fn ->
-      try do
-        handler.(signal)
-      rescue
-        _ -> :error
-      end
-    end)
-
+    Task.start(fn -> safe_invoke(handler, signal) end)
     :ok
   end
 
   defp deliver_signal(signal, %{async: false, handler: handler}) do
-    try do
-      handler.(signal)
-    rescue
-      e -> {:error, e}
-    end
+    safe_invoke_with_error(handler, signal)
+  end
+
+  defp safe_invoke(handler, signal) do
+    handler.(signal)
+  rescue
+    _ -> :error
+  end
+
+  defp safe_invoke_with_error(handler, signal) do
+    handler.(signal)
+  rescue
+    e -> {:error, e}
   end
 
   defp matches_pattern?("*", _signal), do: true

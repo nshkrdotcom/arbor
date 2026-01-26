@@ -50,7 +50,7 @@ defmodule Arbor.Signals do
 
   @behaviour Arbor.Contracts.Libraries.Signals
 
-  alias Arbor.Signals.{Signal, Store, Bus}
+  alias Arbor.Signals.{Bus, Signal, Store}
 
   # Emission API
 

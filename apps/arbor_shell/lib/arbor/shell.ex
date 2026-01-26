@@ -45,7 +45,7 @@ defmodule Arbor.Shell do
 
   @behaviour Arbor.Contracts.Libraries.Shell
 
-  alias Arbor.Shell.{Sandbox, Executor, ExecutionRegistry}
+  alias Arbor.Shell.{ExecutionRegistry, Executor, Sandbox}
   alias Arbor.Signals
 
   @default_sandbox :basic
