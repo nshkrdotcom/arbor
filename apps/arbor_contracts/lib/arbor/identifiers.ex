@@ -14,7 +14,7 @@ defmodule Arbor.Identifiers do
 
   ### Resource URIs
   Format: `arbor://{resource_type}/{operation}/{path}`
-  Example: `arbor://fs/read/home/user/documents`
+  Example: `arbor://fs/read/project/documents`
 
   ### Agent URIs
   Format: `arbor://agent/{agent_id}`
@@ -41,7 +41,7 @@ defmodule Arbor.Identifiers do
 
   ## Examples
 
-      iex> Arbor.Identifiers.valid_resource_uri?("arbor://fs/read/home/user")
+      iex> Arbor.Identifiers.valid_resource_uri?("arbor://fs/read/project/src")
       true
 
       iex> Arbor.Identifiers.valid_resource_uri?("invalid-uri")
@@ -163,8 +163,8 @@ defmodule Arbor.Identifiers do
 
   ## Examples
 
-      iex> Arbor.Identifiers.parse_resource_uri("arbor://fs/read/home/user/docs")
-      {:ok, %{type: "fs", operation: "read", path: "home/user/docs"}}
+      iex> Arbor.Identifiers.parse_resource_uri("arbor://fs/read/project/docs")
+      {:ok, %{type: "fs", operation: "read", path: "project/docs"}}
 
       iex> Arbor.Identifiers.parse_resource_uri("invalid-uri")
       {:error, :invalid_resource_uri}
@@ -188,8 +188,8 @@ defmodule Arbor.Identifiers do
 
   ## Examples
 
-      iex> Arbor.Identifiers.build_resource_uri("fs", "read", "home/user/docs")
-      "arbor://fs/read/home/user/docs"
+      iex> Arbor.Identifiers.build_resource_uri("fs", "read", "project/docs")
+      "arbor://fs/read/project/docs"
   """
   @spec build_resource_uri(String.t(), String.t(), String.t()) :: Types.resource_uri()
   def build_resource_uri(type, operation, path)

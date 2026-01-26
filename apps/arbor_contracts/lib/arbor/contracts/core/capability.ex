@@ -19,7 +19,7 @@ defmodule Arbor.Contracts.Core.Capability do
   `arbor://{type}/{operation}/{path}`
 
   Examples:
-  - `arbor://fs/read/home/user/docs` - Read access to directory
+  - `arbor://fs/read/project/docs` - Read access to directory
   - `arbor://tool/execute/code_analyzer` - Execute specific tool
   - `arbor://api/call/external_service` - Call external API
 
