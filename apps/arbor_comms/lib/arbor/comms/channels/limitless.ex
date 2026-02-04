@@ -99,8 +99,6 @@ defmodule Arbor.Comms.Channels.Limitless do
     end
   end
 
-  defp update_checkpoint([]), do: :ok
-
   defp update_checkpoint(lifelogs) do
     latest =
       lifelogs

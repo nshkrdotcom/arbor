@@ -445,8 +445,6 @@ defmodule Arbor.SDLC.Processors.Deliberator do
     Enum.count(evaluations, fn eval -> eval.vote == vote_type end)
   end
 
-  defp count_votes(_, _), do: 0
-
   defp process_decision(item, decision, decision_points, config, opts, attempt, max_attempts) do
     case decision.decision do
       :approved ->
@@ -459,7 +457,10 @@ defmodule Arbor.SDLC.Processors.Deliberator do
         # Collect feedback and revise
         ai_module = Keyword.get(opts, :ai_module, config.ai_module)
         ai_backend = Keyword.get(opts, :ai_backend, config.ai_backend)
-        revised_points = revise_from_feedback(item, decision, decision_points, ai_module, ai_backend)
+
+        revised_points =
+          revise_from_feedback(item, decision, decision_points, ai_module, ai_backend)
+
         deliberate_with_retries(item, revised_points, config, opts, attempt + 1, max_attempts)
 
       :rejected ->
@@ -469,10 +470,6 @@ defmodule Arbor.SDLC.Processors.Deliberator do
         {:ok, {:moved, :discarded}}
 
       :deadlock ->
-        handle_deadlock(item, decision_points, config, opts)
-
-      _other ->
-        # Unknown verdict, treat as deadlock
         handle_deadlock(item, decision_points, config, opts)
     end
   end
@@ -512,7 +509,7 @@ defmodule Arbor.SDLC.Processors.Deliberator do
 
   defp revise_from_feedback(item, decision, decision_points, ai_module, ai_backend) do
     # Collect concerns and recommendations from all evaluations
-    evaluations = decision.evaluations || []
+    evaluations = decision.evaluations
 
     concerns =
       evaluations
@@ -616,7 +613,7 @@ defmodule Arbor.SDLC.Processors.Deliberator do
 
   defp format_decision_document(item, decision) do
     evaluations_text =
-      (decision.evaluations || [])
+      decision.evaluations
       |> Enum.map_join("\n", fn eval ->
         """
         ### #{eval.perspective}

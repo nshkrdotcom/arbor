@@ -454,9 +454,6 @@ defmodule Arbor.Actions do
 
   # Extract taint level from context, checking both flat and nested forms.
   # Reuses same extraction logic as check_taint for consistency.
-  defp extract_taint_level(nil), do: nil
-  defp extract_taint_level(context) when not is_map(context), do: nil
-
   defp extract_taint_level(context) do
     Map.get(context, :taint) || get_in(context, [:taint_context, :taint])
   end

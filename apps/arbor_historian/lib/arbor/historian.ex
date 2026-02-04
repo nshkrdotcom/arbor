@@ -461,23 +461,19 @@ defmodule Arbor.Historian do
       |> Keyword.put(:category, :security)
       |> Keyword.put(:types, types)
 
-    case QueryEngine.query(query_opts) do
-      {:ok, entries} ->
-        filtered =
-          entries
-          |> Enum.filter(fn entry ->
-            get_in(entry, [:data, :channel_id]) == channel_id ||
-              get_in(entry, ["data", "channel_id"]) == channel_id
-          end)
-          |> Enum.sort_by(fn entry ->
-            entry[:timestamp] || entry["timestamp"]
-          end)
+    {:ok, entries} = QueryEngine.query(query_opts)
 
-        {:ok, filtered}
+    filtered =
+      entries
+      |> Enum.filter(fn entry ->
+        get_in(entry, [:data, :channel_id]) == channel_id ||
+          get_in(entry, ["data", "channel_id"]) == channel_id
+      end)
+      |> Enum.sort_by(fn entry ->
+        entry[:timestamp] || entry["timestamp"]
+      end)
 
-      error ->
-        error
-    end
+    {:ok, filtered}
   end
 
   @doc """
@@ -508,9 +504,6 @@ defmodule Arbor.Historian do
       {:ok, events} ->
         membership = reconstruct_membership(channel_id, events)
         {:ok, membership}
-
-      error ->
-        error
     end
   end
 
@@ -536,25 +529,21 @@ defmodule Arbor.Historian do
       |> Keyword.put(:category, :security)
       |> Keyword.put(:types, @channel_event_types)
 
-    case QueryEngine.query(query_opts) do
-      {:ok, entries} ->
-        channels =
-          entries
-          |> Enum.filter(&event_involves_agent?(&1, agent_id))
-          |> Enum.group_by(fn entry ->
-            data = entry[:data] || entry["data"] || %{}
-            data[:channel_id] || data["channel_id"]
-          end)
-          |> Enum.map(fn {channel_id, channel_events} ->
-            compute_agent_channel_status(agent_id, channel_id, channel_events)
-          end)
-          |> Enum.reject(&is_nil/1)
+    {:ok, entries} = QueryEngine.query(query_opts)
 
-        {:ok, channels}
+    channels =
+      entries
+      |> Enum.filter(&event_involves_agent?(&1, agent_id))
+      |> Enum.group_by(fn entry ->
+        data = entry[:data] || entry["data"] || %{}
+        data[:channel_id] || data["channel_id"]
+      end)
+      |> Enum.map(fn {channel_id, channel_events} ->
+        compute_agent_channel_status(agent_id, channel_id, channel_events)
+      end)
+      |> Enum.reject(&is_nil/1)
 
-      error ->
-        error
-    end
+    {:ok, channels}
   end
 
   defp event_involves_agent?(entry, agent_id) do

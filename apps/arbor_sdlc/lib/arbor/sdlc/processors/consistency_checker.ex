@@ -320,8 +320,6 @@ defmodule Arbor.SDLC.Processors.ConsistencyChecker do
     end
   end
 
-  defp format_criteria_with_status(_), do: "None specified"
-
   defp move_to_completed(path, config) do
     filename = Path.basename(path)
     dest_dir = Pipeline.stage_path(:completed, config.roadmap_root)

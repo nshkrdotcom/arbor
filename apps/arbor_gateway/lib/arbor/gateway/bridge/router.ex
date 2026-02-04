@@ -93,12 +93,13 @@ defmodule Arbor.Gateway.Bridge.Router do
 
     Arbor.Signals.emit(
       :tool_authorization,
+      :decision,
       %{
         tool_name: tool_name,
         decision: result[:decision],
-        reason: result[:reason]
-      },
-      agent_id: agent_id
+        reason: result[:reason],
+        agent_id: agent_id
+      }
     )
   rescue
     _ -> :ok

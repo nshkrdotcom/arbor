@@ -267,7 +267,7 @@ defmodule Arbor.Actions.Proposal do
           title: proposal.title,
           description: proposal.description,
           metadata:
-            Map.merge(proposal.metadata || %{}, %{
+            Map.merge(proposal.metadata, %{
               branch: branch,
               revision: revision_number,
               revision_notes: notes,

@@ -107,10 +107,8 @@ defmodule Arbor.SDLC do
         :not_running
 
       pid ->
-        case Arbor.Flow.Watcher.status(pid) do
-          {:ok, status} -> status
-          _ -> :unknown
-        end
+        {:ok, status} = Arbor.Flow.Watcher.status(pid)
+        status
     end
   end
 
@@ -726,10 +724,6 @@ defmodule Arbor.SDLC do
 
       {:skipped, _} ->
         # Stage disabled — don't update tracker so it retries when enabled
-        :ok
-
-      _ ->
-        # Moved/updated variants are already tracked by write_and_move_item
         :ok
     end
   end

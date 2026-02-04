@@ -69,13 +69,8 @@ defmodule Arbor.Sandbox.Virtual do
   """
   @spec snapshot(map()) :: {:ok, String.t(), map()}
   def snapshot(%{vfs: vfs} = state) do
-    case JidoSandbox.snapshot(vfs) do
-      {:ok, snapshot_id, new_vfs} ->
-        {:ok, snapshot_id, %{state | vfs: new_vfs}}
-
-      error ->
-        error
-    end
+    {:ok, snapshot_id, new_vfs} = JidoSandbox.snapshot(vfs)
+    {:ok, snapshot_id, %{state | vfs: new_vfs}}
   end
 
   @doc """

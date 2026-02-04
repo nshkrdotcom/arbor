@@ -313,14 +313,14 @@ defmodule Arbor.Actions.Git do
         [_, files, insertions, deletions] ->
           %{
             files_changed: String.to_integer(files),
-            insertions: parse_int_or_zero(insertions),
-            deletions: parse_int_or_zero(deletions)
+            insertions: parse_int_or_zero(output, insertions),
+            deletions: parse_int_or_zero(output, deletions)
           }
 
         [_, files, insertions] ->
           %{
             files_changed: String.to_integer(files),
-            insertions: parse_int_or_zero(insertions),
+            insertions: parse_int_or_zero(output, insertions),
             deletions: 0
           }
 
@@ -336,9 +336,16 @@ defmodule Arbor.Actions.Git do
       end
     end
 
-    defp parse_int_or_zero(nil), do: 0
-    defp parse_int_or_zero(""), do: 0
-    defp parse_int_or_zero(s), do: String.to_integer(s)
+    defp parse_int_or_zero(_output, ""), do: 0
+
+    defp parse_int_or_zero(output, {start, len})
+         when is_integer(start) and is_integer(len) do
+      output
+      |> String.slice(start, len)
+      |> String.to_integer()
+    end
+
+    defp parse_int_or_zero(_output, s) when is_binary(s), do: String.to_integer(s)
   end
 
   defmodule Commit do

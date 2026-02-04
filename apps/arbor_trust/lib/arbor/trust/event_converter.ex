@@ -53,7 +53,7 @@ defmodule Arbor.Trust.EventConverter do
       "arbor.trust.#{event.event_type}",
       data,
       id: event.id,
-      metadata: event.metadata || %{},
+      metadata: event.metadata,
       timestamp: event.timestamp
     )
   end
@@ -75,7 +75,7 @@ defmodule Arbor.Trust.EventConverter do
       previous_tier: atomize_tier(data[:previous_tier] || data["previous_tier"]),
       new_tier: atomize_tier(data[:new_tier] || data["new_tier"]),
       reason: data[:reason] || data["reason"],
-      metadata: event.metadata || %{}
+      metadata: event.metadata
     )
   end
 

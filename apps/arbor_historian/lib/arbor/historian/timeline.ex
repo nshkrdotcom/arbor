@@ -73,9 +73,9 @@ defmodule Arbor.Historian.Timeline do
     by_cause_id = Enum.group_by(all_entries, & &1.cause_id)
 
     # Trace backward (causes)
-    causes = trace_backward(signal_id, by_signal_id, MapSet.new())
+    causes = trace_backward(signal_id, by_signal_id, %{})
     # Trace forward (effects)
-    effects = trace_forward(signal_id, by_cause_id, MapSet.new())
+    effects = trace_forward(signal_id, by_cause_id, %{})
 
     # Combine, include the root entry
     root = Map.get(by_signal_id, signal_id)
@@ -125,10 +125,8 @@ defmodule Arbor.Historian.Timeline do
 
   defp read_all_streams(stream_ids, opts) do
     Enum.flat_map(stream_ids, fn stream_id ->
-      case QueryEngine.read_stream(stream_id, opts) do
-        {:ok, entries} -> entries
-        _ -> []
-      end
+      {:ok, entries} = QueryEngine.read_stream(stream_id, opts)
+      entries
     end)
   end
 
@@ -165,8 +163,9 @@ defmodule Arbor.Historian.Timeline do
     Enum.filter(entries, &MapSet.member?(type_set, &1.type))
   end
 
+  @spec trace_backward(String.t(), map(), map()) :: [HistoryEntry.t()]
   defp trace_backward(signal_id, by_signal_id, seen) do
-    if MapSet.member?(seen, signal_id) do
+    if Map.has_key?(seen, signal_id) do
       []
     else
       do_trace_backward(signal_id, by_signal_id, seen)
@@ -179,7 +178,7 @@ defmodule Arbor.Historian.Timeline do
         []
 
       entry ->
-        seen = MapSet.put(seen, signal_id)
+        seen = Map.put(seen, signal_id, true)
         trace_backward_from_entry(entry, signal_id, by_signal_id, seen)
     end
   end
@@ -192,11 +191,12 @@ defmodule Arbor.Historian.Timeline do
     end
   end
 
+  @spec trace_forward(String.t(), map(), map()) :: [HistoryEntry.t()]
   defp trace_forward(signal_id, by_cause_id, seen) do
-    if MapSet.member?(seen, signal_id) do
+    if Map.has_key?(seen, signal_id) do
       []
     else
-      seen = MapSet.put(seen, signal_id)
+      seen = Map.put(seen, signal_id, true)
       effects = Map.get(by_cause_id, signal_id, [])
 
       Enum.flat_map(effects, fn effect ->

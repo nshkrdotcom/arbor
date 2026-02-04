@@ -61,7 +61,7 @@ defmodule Arbor.Common.Sessions.Reader do
 
       stream =
         expanded
-        |> File.stream!([], :line)
+        |> File.stream!(:line)
         |> Stream.map(&String.trim_trailing(&1, "\n"))
         |> Stream.reject(&(&1 == ""))
         |> Stream.map(&parse_line(&1, provider, skip_errors))

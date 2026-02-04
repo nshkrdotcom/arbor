@@ -161,7 +161,6 @@ defmodule Arbor.Actions.Sandbox do
     defp maybe_add(opts, _key, nil), do: opts
     defp maybe_add(opts, key, value), do: Keyword.put(opts, key, value)
 
-    defp format_error({:unauthorized, reason}), do: "Unauthorized: #{inspect(reason)}"
     defp format_error(reason), do: "Sandbox creation failed: #{inspect(reason)}"
   end
 
@@ -221,7 +220,5 @@ defmodule Arbor.Actions.Sandbox do
     end
 
     defp format_error(:not_found), do: "Sandbox not found"
-    defp format_error({:unauthorized, reason}), do: "Unauthorized: #{inspect(reason)}"
-    defp format_error(reason), do: "Sandbox destruction failed: #{inspect(reason)}"
   end
 end

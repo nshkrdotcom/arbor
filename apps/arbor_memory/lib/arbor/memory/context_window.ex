@@ -304,7 +304,7 @@ defmodule Arbor.Memory.ContextWindow do
       token_usage: current_usage,
       max_tokens: window.max_tokens,
       threshold_tokens: threshold_tokens,
-      utilization: if(window.max_tokens > 0, do: current_usage / window.max_tokens, else: 0.0),
+      utilization: current_usage / window.max_tokens,
       should_summarize: should_summarize?(window),
       model_id: window.model_id
     }

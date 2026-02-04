@@ -254,7 +254,6 @@ defmodule Arbor.Consensus.EvaluatorBackend.Deterministic do
   defp perspective_name(:mix_compile), do: "Mix compile --warnings-as-errors"
   defp perspective_name(:mix_format_check), do: "Mix format check"
   defp perspective_name(:mix_dialyzer), do: "Mix dialyzer"
-  defp perspective_name(other), do: "#{other}"
 
   defp extract_concerns(result, _perspective, true = _passed) do
     # Even on pass, check for warnings in output

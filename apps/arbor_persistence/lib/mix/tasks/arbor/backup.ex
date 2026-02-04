@@ -81,10 +81,6 @@ defmodule Mix.Tasks.Arbor.Backup do
         Mix.shell().error("Error: age encryption failed with exit code #{code}")
         Mix.shell().error(output)
         exit({:shutdown, 1})
-
-      {:error, reason} ->
-        Mix.shell().error("Error: #{inspect(reason)}")
-        exit({:shutdown, 1})
     end
   end
 end

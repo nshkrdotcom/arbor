@@ -118,7 +118,7 @@ defmodule Arbor.Actions.AI do
       case Arbor.AI.generate_text(prompt, opts) do
         {:ok, response} ->
           result = %{
-            text: response.text || "",
+            text: response.text,
             provider_used: response.provider,
             model: response.model,
             usage: response[:usage] || %{}
@@ -247,7 +247,7 @@ defmodule Arbor.Actions.AI do
 
       case Arbor.AI.generate_text(prompt, opts) do
         {:ok, response} ->
-          analysis_text = response.text || ""
+          analysis_text = response.text
           suggestions = extract_suggestions(analysis_text)
 
           result = %{

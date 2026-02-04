@@ -635,9 +635,6 @@ defmodule Arbor.AI.BudgetTracker do
 
       {:error, reason} ->
         Logger.warning("Failed to read budget persistence file", reason: reason)
-
-      _ ->
-        :ok
     end
   end
 

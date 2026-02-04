@@ -206,26 +206,14 @@ defmodule Arbor.Gateway.Memory.Router do
     else
       opts = build_summarize_opts(conn.body_params)
 
-      case Memory.summarize(agent_id, text, opts) do
-        {:ok, result} ->
-          json_response(conn, 200, %{
-            status: "ok",
-            summary: result.summary,
-            complexity: result.complexity,
-            model_used: result.model_used
-          })
+      {:error, {:llm_not_configured, info}} = Memory.summarize(agent_id, text, opts)
 
-        {:error, {:llm_not_configured, info}} ->
-          json_response(conn, 503, %{
-            status: "error",
-            reason: "LLM not configured",
-            complexity: info[:complexity],
-            model_needed: info[:model_needed]
-          })
-
-        {:error, reason} ->
-          json_response(conn, 500, %{status: "error", reason: inspect(reason)})
-      end
+      json_response(conn, 503, %{
+        status: "error",
+        reason: "LLM not configured",
+        complexity: info[:complexity],
+        model_needed: info[:model_needed]
+      })
     end
   end
 

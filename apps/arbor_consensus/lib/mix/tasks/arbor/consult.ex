@@ -117,7 +117,7 @@ defmodule Mix.Tasks.Arbor.Consult do
         ask_one(question, perspective, context, eval_opts, provider_override)
       end
 
-    if save? and results != :error do
+    if save? do
       save_results(question, results, opts, provider_override)
     end
   end

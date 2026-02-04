@@ -1038,6 +1038,7 @@ defmodule Arbor.Consensus.Coordinator do
     end
   end
 
+  @spec update_proposal_status(t(), String.t(), Proposal.status()) :: t()
   defp update_proposal_status(state, proposal_id, status) do
     case Map.get(state.proposals, proposal_id) do
       nil ->
@@ -1047,19 +1048,13 @@ defmodule Arbor.Consensus.Coordinator do
         proposal = Proposal.update_status(proposal, status)
         state = %{state | proposals: Map.put(state.proposals, proposal_id, proposal)}
 
-        # Free quota on terminal statuses
-        if terminal_status?(status) do
-          %{
-            state
-            | proposals_by_agent: remove_proposal_from_agent(state.proposals_by_agent, proposal)
-          }
-        else
+        # Free quota on terminal statuses (all callers pass terminal statuses)
+        %{
           state
-        end
+          | proposals_by_agent: remove_proposal_from_agent(state.proposals_by_agent, proposal)
+        }
     end
   end
-
-  defp terminal_status?(status), do: status in [:approved, :rejected, :vetoed, :deadlock]
 
   defp kill_active_council(state, proposal_id) do
     case Map.get(state.active_councils, proposal_id) do

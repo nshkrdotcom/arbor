@@ -108,20 +108,15 @@ defmodule Arbor.Actions.Historian do
 
       opts = build_opts(params)
 
-      case Arbor.Historian.query(opts) do
-        {:ok, events} ->
-          result = %{
-            events: events,
-            count: length(events)
-          }
+      {:ok, events} = Arbor.Historian.query(opts)
 
-          Actions.emit_completed(__MODULE__, %{count: length(events)})
-          {:ok, result}
+      result = %{
+        events: events,
+        count: length(events)
+      }
 
-        {:error, reason} ->
-          Actions.emit_failed(__MODULE__, reason)
-          {:error, format_error(reason)}
-      end
+      Actions.emit_completed(__MODULE__, %{count: length(events)})
+      {:ok, result}
     end
 
     defp build_opts(params) do
@@ -163,9 +158,6 @@ defmodule Arbor.Actions.Historian do
     defp sanitize_params(params) do
       Map.take(params, [:category, :type, :limit])
     end
-
-    defp format_error({:unauthorized, reason}), do: "Unauthorized: #{inspect(reason)}"
-    defp format_error(reason), do: "Query failed: #{inspect(reason)}"
   end
 
   defmodule CausalityTree do
@@ -219,8 +211,10 @@ defmodule Arbor.Actions.Historian do
       # Use causality_chain from Historian.Timeline
       opts = [max_depth: max_depth]
 
-      case Arbor.Historian.causality_chain(event_id, opts) do
-        {:ok, []} ->
+      {:ok, chain} = Arbor.Historian.causality_chain(event_id, opts)
+
+      case chain do
+        [] ->
           # No chain found - event exists but has no causal relationships
           result = %{
             root_event: nil,
@@ -231,7 +225,7 @@ defmodule Arbor.Actions.Historian do
           Actions.emit_completed(__MODULE__, %{depth: 0})
           {:ok, result}
 
-        {:ok, chain} when is_list(chain) ->
+        chain when is_list(chain) ->
           result = %{
             root_event: List.last(chain),
             chain: chain,
@@ -240,16 +234,8 @@ defmodule Arbor.Actions.Historian do
 
           Actions.emit_completed(__MODULE__, %{depth: result.depth})
           {:ok, result}
-
-        {:error, reason} ->
-          Actions.emit_failed(__MODULE__, reason)
-          {:error, format_error(reason)}
       end
     end
-
-    defp format_error(:not_found), do: "Event not found"
-    defp format_error({:unauthorized, reason}), do: "Unauthorized: #{inspect(reason)}"
-    defp format_error(reason), do: "Causality trace failed: #{inspect(reason)}"
   end
 
   defmodule ReconstructState do
@@ -347,10 +333,8 @@ defmodule Arbor.Actions.Historian do
       epoch = ~U[1970-01-01 00:00:00Z]
       span = Arbor.Historian.span(from: epoch, to: as_of, streams: [stream])
 
-      case Arbor.Historian.reconstruct(span) do
-        {:ok, events} -> {:ok, events}
-        error -> error
-      end
+      {:ok, events} = Arbor.Historian.reconstruct(span)
+      {:ok, events}
     end
 
     defp reconstruct_from_events(events) do
@@ -378,7 +362,6 @@ defmodule Arbor.Actions.Historian do
       end)
     end
 
-    defp format_error({:unauthorized, reason}), do: "Unauthorized: #{inspect(reason)}"
     defp format_error(reason), do: "State reconstruction failed: #{inspect(reason)}"
   end
 
@@ -516,7 +499,6 @@ defmodule Arbor.Actions.Historian do
 
     defp result_count(data) when is_list(data), do: length(data)
     defp result_count(data) when is_map(data), do: 1
-    defp result_count(_), do: 0
 
     defp wrap_result(:trace_backward, chain) do
       %{chain: chain, depth: length(chain)}
@@ -539,7 +521,5 @@ defmodule Arbor.Actions.Historian do
     end
 
     defp format_error({:missing_param, key}), do: "Missing required parameter: #{key}"
-    defp format_error({:unauthorized, reason}), do: "Unauthorized: #{inspect(reason)}"
-    defp format_error(reason), do: "Taint trace failed: #{inspect(reason)}"
   end
 end

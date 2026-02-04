@@ -444,19 +444,10 @@ defmodule Arbor.AI do
   # Normalize CLI response to contract format
   defp normalize_response(%Response{} = response) do
     %{
-      text: response.text || "",
+      text: response.text,
       usage: response.usage || %{input_tokens: 0, output_tokens: 0, total_tokens: 0},
       model: response.model,
       provider: response.provider
-    }
-  end
-
-  defp normalize_response(response) when is_map(response) do
-    %{
-      text: response[:text] || response["text"] || "",
-      usage: response[:usage] || response["usage"] || %{},
-      model: response[:model] || response["model"],
-      provider: response[:provider] || response["provider"]
     }
   end
 
@@ -485,28 +476,12 @@ defmodule Arbor.AI do
     }
   end
 
-  defp extract_text(response) when is_binary(response), do: response
-
-  defp extract_text(response) when is_struct(response) do
-    extract_text(Map.from_struct(response))
+  defp extract_text(%ReqLLM.Response{} = response) do
+    ReqLLM.Response.text(response) || ""
   end
 
-  defp extract_text(response) when is_map(response) do
-    extract_text_from_map(response)
-  end
-
-  defp extract_text(_response), do: ""
-
-  defp extract_text_from_map(%{text: text}) when is_binary(text), do: text
-  defp extract_text_from_map(%{content: content}) when is_binary(content), do: content
-
-  defp extract_text_from_map(%{message: %{content: content}}) when is_binary(content),
-    do: content
-
-  defp extract_text_from_map(_), do: ""
-
-  defp extract_usage(response) when is_map(response) do
-    usage = Map.get(response, :usage) || %{}
+  defp extract_usage(%ReqLLM.Response{} = response) do
+    usage = ReqLLM.Response.usage(response) || %{}
 
     %{
       input_tokens: Map.get(usage, :input_tokens, 0),
@@ -516,8 +491,6 @@ defmodule Arbor.AI do
           Map.get(usage, :input_tokens, 0) + Map.get(usage, :output_tokens, 0)
     }
   end
-
-  defp extract_usage(_), do: %{input_tokens: 0, output_tokens: 0, total_tokens: 0}
 
   # ===========================================================================
   # Private Helpers - Embedding
@@ -557,9 +530,6 @@ defmodule Arbor.AI do
 
       {:error, :no_embedding_providers} ->
         maybe_test_fallback()
-
-      {:error, reason} ->
-        {:error, reason}
     end
   end
 

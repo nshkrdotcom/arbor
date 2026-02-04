@@ -117,7 +117,7 @@ defmodule Arbor.AI.ShellAdapter do
   defp build_output(result, opts) do
     if Keyword.get(opts, :stderr_to_stdout, false) do
       # Combine stdout and stderr
-      stdout = result.stdout || ""
+      stdout = result.stdout
       stderr = Map.get(result, :stderr, "")
 
       if stderr != "" do
@@ -126,7 +126,7 @@ defmodule Arbor.AI.ShellAdapter do
         stdout
       end
     else
-      result.stdout || ""
+      result.stdout
     end
   end
 end

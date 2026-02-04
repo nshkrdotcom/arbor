@@ -66,7 +66,15 @@ defmodule Arbor.Historian.EventConverter do
       stream_version: event.event_number,
       global_position: event.global_position,
       version: meta[:version] || meta["version"] || "1.0.0",
-      metadata: Map.drop(meta, [:subject_id, :subject_type, :version, "subject_id", "subject_type", "version"])
+      metadata:
+        Map.drop(meta, [
+          :subject_id,
+          :subject_type,
+          :version,
+          "subject_id",
+          "subject_type",
+          "version"
+        ])
     )
   end
 
@@ -101,9 +109,6 @@ defmodule Arbor.Historian.EventConverter do
         end
     end
   end
-
-  defp encode_event_type_from_string(nil), do: nil
-  defp encode_event_type_from_string(value) when is_atom(value), do: value
 
   # Subject type uses SafeAtom.to_subject_type which has known allowed values
   defp atomize_subject_type(nil), do: nil

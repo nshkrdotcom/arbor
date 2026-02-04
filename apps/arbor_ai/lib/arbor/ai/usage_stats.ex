@@ -678,9 +678,6 @@ defmodule Arbor.AI.UsageStats do
 
       {:error, reason} ->
         Logger.warning("Failed to read usage stats persistence file", reason: reason)
-
-      _ ->
-        :ok
     end
   end
 

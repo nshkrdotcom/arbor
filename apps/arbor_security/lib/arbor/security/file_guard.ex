@@ -195,14 +195,9 @@ defmodule Arbor.Security.FileGuard do
   """
   @spec list_fs_capabilities(String.t()) :: {:ok, [Capability.t()]} | {:error, term()}
   def list_fs_capabilities(agent_id) do
-    case CapabilityStore.list_for_principal(agent_id) do
-      {:ok, caps} ->
-        fs_caps = Enum.filter(caps, &fs_capability?/1)
-        {:ok, fs_caps}
-
-      error ->
-        error
-    end
+    {:ok, caps} = CapabilityStore.list_for_principal(agent_id)
+    fs_caps = Enum.filter(caps, &fs_capability?/1)
+    {:ok, fs_caps}
   end
 
   # ===========================================================================
@@ -224,21 +219,17 @@ defmodule Arbor.Security.FileGuard do
 
   defp find_parent_capability(agent_id, operation, requested_path) do
     # Look for capabilities that cover parent directories
-    case CapabilityStore.list_for_principal(agent_id) do
-      {:ok, caps} ->
-        # Filter to fs capabilities for the right operation that cover this path
-        matching =
-          Enum.filter(caps, fn cap ->
-            fs_capability?(cap) and path_covered_by_capability?(cap, operation, requested_path)
-          end)
+    {:ok, caps} = CapabilityStore.list_for_principal(agent_id)
 
-        case matching do
-          [cap | _] -> {:ok, cap}
-          [] -> {:error, :no_capability}
-        end
+    # Filter to fs capabilities for the right operation that cover this path
+    matching =
+      Enum.filter(caps, fn cap ->
+        fs_capability?(cap) and path_covered_by_capability?(cap, operation, requested_path)
+      end)
 
-      error ->
-        error
+    case matching do
+      [cap | _] -> {:ok, cap}
+      [] -> {:error, :no_capability}
     end
   end
 
@@ -264,7 +255,6 @@ defmodule Arbor.Security.FileGuard do
     case SafePath.resolve_within(requested_path, root) do
       {:ok, resolved} -> {:ok, resolved}
       {:error, :path_traversal} -> {:error, :path_traversal}
-      {:error, reason} -> {:error, {:invalid_path, reason}}
     end
   end
 

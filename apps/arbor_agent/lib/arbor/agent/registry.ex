@@ -183,14 +183,11 @@ defmodule Arbor.Agent.Registry do
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
     # Clean up entries for dead processes
     case :ets.match_object(@table, {:_, %{pid: pid}}) do
-      entries when is_list(entries) ->
+      entries ->
         for {agent_id, _entry} <- entries do
           :ets.delete(@table, agent_id)
           Logger.debug("Registry cleaned up dead agent: #{agent_id}")
         end
-
-      _ ->
-        :ok
     end
 
     {:noreply, state}

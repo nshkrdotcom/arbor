@@ -135,7 +135,9 @@ defmodule Arbor.Trust.CapabilitySync do
         handle_trust_event(agent_id, event_type, metadata)
       catch
         :exit, reason ->
-          Logger.warning("CapabilitySync: Failed to handle #{event_type} for #{agent_id}: #{inspect(reason)}")
+          Logger.warning(
+            "CapabilitySync: Failed to handle #{event_type} for #{agent_id}: #{inspect(reason)}"
+          )
       end
     end
 
@@ -345,18 +347,11 @@ defmodule Arbor.Trust.CapabilitySync do
     lost_uris = Enum.map(lost, fn t -> expand_resource_uri(t.resource_uri, agent_id) end)
 
     # Find and revoke capabilities that are no longer allowed
-    case Arbor.Security.list_capabilities(principal_id) do
-      {:ok, capabilities} ->
-        Enum.each(capabilities, fn cap ->
-          maybe_revoke_lost_capability(cap, lost_uris, agent_id)
-        end)
+    {:ok, capabilities} = Arbor.Security.list_capabilities(principal_id)
 
-      {:error, reason} ->
-        Logger.error("Failed to list capabilities for demotion sync",
-          agent_id: agent_id,
-          reason: reason
-        )
-    end
+    Enum.each(capabilities, fn cap ->
+      maybe_revoke_lost_capability(cap, lost_uris, agent_id)
+    end)
   end
 
   defp maybe_revoke_lost_capability(cap, lost_uris, agent_id) do
@@ -391,16 +386,8 @@ defmodule Arbor.Trust.CapabilitySync do
       |> Enum.map(fn t -> expand_resource_uri(t.resource_uri, agent_id) end)
       |> MapSet.new()
 
-    case Arbor.Security.list_capabilities(principal_id) do
-      {:ok, capabilities} ->
-        revoke_non_readonly_capabilities(capabilities, read_only_uris)
-
-      {:error, reason} ->
-        Logger.error("Failed to list capabilities for freeze",
-          agent_id: agent_id,
-          reason: reason
-        )
-    end
+    {:ok, capabilities} = Arbor.Security.list_capabilities(principal_id)
+    revoke_non_readonly_capabilities(capabilities, read_only_uris)
   end
 
   defp revoke_non_readonly_capabilities(capabilities, read_only_uris) do
@@ -412,13 +399,8 @@ defmodule Arbor.Trust.CapabilitySync do
   end
 
   defp find_existing_capability(principal_id, resource_uri) do
-    case Arbor.Security.list_capabilities(principal_id) do
-      {:ok, capabilities} ->
-        find_matching_capability(capabilities, resource_uri)
-
-      {:error, reason} ->
-        {:error, reason}
-    end
+    {:ok, capabilities} = Arbor.Security.list_capabilities(principal_id)
+    find_matching_capability(capabilities, resource_uri)
   end
 
   defp find_matching_capability(capabilities, resource_uri) do
